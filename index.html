@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZILCH — Free Games Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #050010;
+    --bg-1: #0a0420;
+    --bg-2: #120a2e;
+    --neon-pink: #ff2bd6;
+    --neon-cyan: #00f0ff;
+    --neon-purple: #b14aff;
+    --neon-yellow: #f8f400;
+    --neon-green: #00ff9c;
+    --text-1: #e9e6ff;
+    --text-2: #9a93c7;
+    --text-3: #6c6494;
+    --steam: #66c0f4;
+    --epic: #ffffff;
+    --gog: #c66cff;
+    --card-bg: rgba(15, 8, 40, 0.72);
+    --border: rgba(177, 74, 255, 0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--bg-0);
+    color: var(--text-1);
+    font-family: 'Rajdhani', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Animated cyberpunk background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(255, 43, 214, 0.18), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgba(0, 240, 255, 0.18), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(177, 74, 255, 0.12), transparent 60%),
+      linear-gradient(180deg, #050010 0%, #0a0420 50%, #050010 100%);
+    z-index: -2;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 240, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    z-index: -1;
+    pointer-events: none;
+    animation: gridShift 20s linear infinite;
+  }
+
+  @keyframes gridShift {
+    0%   { background-position: 0 0, 0 0; }
+    100% { background-position: 40px 40px, 40px 40px; }
+  }
+
+  /* Scanline overlay */
+  .scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(0, 0, 0, 0.18) 3px,
+      transparent 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+    mix-blend-mode: multiply;
+    opacity: 0.5;
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    padding: 40px 32px 24px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(20, 0, 40, 0.6), transparent);
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: clamp(48px, 9vw, 110px);
+    letter-spacing: 0.18em;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 50%, var(--neon-cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow:
+      0 0 20px rgba(255, 43, 214, 0.45),
+      0 0 40px rgba(0, 240, 255, 0.25);
+    position: relative;
+    display: inline-block;
+  }
+
+  .logo::before, .logo::after {
+    content: 'ZILCH';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    background: inherit;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    mix-blend-mode: screen;
+  }
+  .logo::before { animation: glitch1 4s infinite; color: var(--neon-pink); -webkit-text-fill-color: var(--neon-pink); }
+  .logo::after  { animation: glitch2 4s infinite; color: var(--neon-cyan); -webkit-text-fill-color: var(--neon-cyan); }
+
+  @keyframes glitch1 {
+    0%, 92%, 100% { transform: translate(0); opacity: 0; }
+    93% { transform: translate(-3px, 1px); opacity: 0.8; }
+    95% { transform: translate(2px, -1px); opacity: 0.6; }
+    97% { transform: translate(-2px, 2px); opacity: 0.7; }
+  }
+  @keyframes glitch2 {
+    0%, 92%, 100% { transform: translate(0); opacity: 0; }
+    94% { transform: translate(2px, -1px); opacity: 0.6; }
+    96% { transform: translate(-2px, 1px); opacity: 0.7; }
+    98% { transform: translate(1px, 2px); opacity: 0.5; }
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.4em;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .subtitle span { color: var(--neon-pink); }
+
+  /* Control bar */
+  .control-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .scan-btn {
+    position: relative;
+    padding: 16px 36px;
+    background: linear-gradient(135deg, rgba(255, 43, 214, 0.2), rgba(0, 240, 255, 0.2));
+    border: 2px solid var(--neon-pink);
+    color: var(--text-1);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+    transition: all 0.25s ease;
+    box-shadow:
+      0 0 20px rgba(255, 43, 214, 0.4),
+      inset 0 0 20px rgba(255, 43, 214, 0.1);
+  }
+
+  .scan-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 30px rgba(255, 43, 214, 0.7),
+      0 0 60px rgba(0, 240, 255, 0.3),
+      inset 0 0 20px rgba(0, 240, 255, 0.15);
+  }
+
+  .scan-btn:active { transform: translateY(0); }
+  .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .scan-btn .icon {
+    display: inline-block;
+    margin-right: 10px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 8px 18px;
+    background: rgba(15, 8, 40, 0.6);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+  .chip.active {
+    background: linear-gradient(90deg, rgba(0, 240, 255, 0.18), rgba(177, 74, 255, 0.18));
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+  }
+
+  /* Status line */
+  .status {
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    color: var(--text-3);
+    padding: 0 24px 12px;
+    text-transform: uppercase;
+    min-height: 22px;
+  }
+  .status .ok { color: var(--neon-green); }
+  .status .warn { color: var(--neon-yellow); }
+  .status .err { color: var(--neon-pink); }
+
+  /* Main grid */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 12px 24px 80px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  /* Card */
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+    animation: cardIn 0.5s ease both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--neon-cyan);
+    box-shadow:
+      0 0 30px rgba(0, 240, 255, 0.3),
+      0 0 60px rgba(177, 74, 255, 0.2);
+  }
+
+  .card-banner {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-1));
+  }
+  .card-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+  .card:hover .card-banner img { transform: scale(1.06); }
+
+  .card-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(5, 0, 16, 0.95) 100%);
+    pointer-events: none;
+  }
+
+  .platform-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 6px 12px;
+    background: rgba(5, 0, 16, 0.85);
+    border: 1px solid;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+    z-index: 2;
+  }
+  .platform-badge.steam { color: var(--steam); border-color: var(--steam); box-shadow: 0 0 10px rgba(102, 192, 244, 0.4); }
+  .platform-badge.epic  { color: var(--epic);  border-color: var(--epic);  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+  .platform-badge.gog   { color: var(--gog);   border-color: var(--gog);   box-shadow: 0 0 10px rgba(198, 108, 255, 0.4); }
+
+  .type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    z-index: 2;
+    backdrop-filter: blur(6px);
+  }
+  .type-badge.keep  { background: rgba(0, 255, 156, 0.15); color: var(--neon-green); border: 1px solid var(--neon-green); }
+  .type-badge.weekend { background: rgba(248, 244, 0, 0.15); color: var(--neon-yellow); border: 1px solid var(--neon-yellow); }
+  .type-badge.trial { background: rgba(255, 43, 214, 0.15); color: var(--neon-pink); border: 1px solid var(--neon-pink); }
+  .type-badge.dlc { background: rgba(0, 240, 255, 0.15); color: var(--neon-cyan); border: 1px solid var(--neon-cyan); }
+
+  .card-body {
+    padding: 18px 20px 22px;
+  }
+
+  .card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 6px;
+    line-height: 1.2;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .card-meta span { display: flex; align-items: center; gap: 4px; }
+  .card-meta .price { text-decoration: line-through; }
+  .card-meta .free { color: var(--neon-green); font-weight: 700; }
+
+  .card-desc {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-2);
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(177, 74, 255, 0.18);
+  }
+
+  .countdown {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--neon-cyan);
+    letter-spacing: 0.1em;
+  }
+  .countdown.urgent { color: var(--neon-pink); animation: pulse 1.5s infinite; }
+  .countdown .label { color: var(--text-3); margin-right: 6px; text-transform: uppercase; font-size: 10px; }
+
+  .claim-btn {
+    padding: 10px 18px;
+    background: linear-gradient(90deg, var(--neon-pink), var(--neon-purple));
+    color: white;
+    text-decoration: none;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  }
+  .claim-btn:hover {
+    box-shadow: 0 0 20px rgba(255, 43, 214, 0.6);
+    filter: brightness(1.15);
+  }
+
+  /* Empty / loading states */
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    grid-column: 1 / -1;
+  }
+  .empty-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px var(--neon-pink));
+  }
+  .empty-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    color: var(--neon-cyan);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .empty-text {
+    color: var(--text-2);
+    font-size: 14px;
+    letter-spacing: 0.1em;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 60px 24px;
+    grid-column: 1 / -1;
+  }
+  .loader {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border: 3px solid transparent;
+    border-top-color: var(--neon-pink);
+    border-right-color: var(--neon-cyan);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    animation: pulse 1.5s infinite;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--text-3);
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+  }
+  footer .accent { color: var(--neon-pink); }
+
+  /* Toast / source notice */
+  .source-notice {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    text-align: center;
+  }
+  .source-notice b { color: var(--neon-cyan); }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+    .control-bar { padding: 16px; }
+    .scan-btn { padding: 14px 24px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<header>
+  <div class="logo" data-text="ZILCH">ZILCH</div>
+  <div class="subtitle">Free Games <span>//</span> Radar Online <span>//</span> Steam · Epic · GOG</div>
+</header>
+
+<div class="control-bar">
+  <button class="scan-btn" id="scanBtn">
+    <span class="icon">◉</span> Initiate Scan
+  </button>
+  <div class="filter-chips" id="filters">
+    <div class="chip active" data-filter="all">ALL</div>
+    <div class="chip" data-filter="steam">STEAM</div>
+    <div class="chip" data-filter="epic">EPIC</div>
+    <div class="chip" data-filter="gog">GOG</div>
+    <div class="chip" data-filter="keep">KEEP FOREVER</div>
+    <div class="chip" data-filter="weekend">FREE WEEKEND</div>
+    <div class="chip" data-filter="dlc">DLC</div>
+    <div class="chip" data-filter="nodlc">HIDE DLC</div>
+  </div>
+</div>
+
+<div class="status" id="status">// SYSTEM IDLE — PRESS [INITIATE SCAN] TO BEGIN //</div>
+
+<main>
+  <div class="grid" id="grid">
+    <div class="empty-state">
+      <div class="empty-icon">⌬</div>
+      <div class="empty-title">Awaiting Signal</div>
+      <div class="empty-text">Click <b>Initiate Scan</b> to sweep Steam, Epic & GOG for free games.</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; ZILCH <span class="accent">v1.0</span> &nbsp;//&nbsp; Powered by Open APIs &nbsp;//&nbsp; Stay zilch, stay free.
+</footer>
+
+<script>
+  // =============================================================
+  //  ZILCH — Free Games Aggregator
+  //  Sources:
+  //   - Epic Games Store: official free promotions endpoint
+  //   - Steam + GOG: GamerPower public API (aggregates giveaways)
+  //
+  //  NOTE: When opened from file:// (or any origin not whitelisted
+  //  by the API servers), browsers block direct fetch with CORS.
+  //  We work around this by routing each request through a list of
+  //  public CORS proxies and falling back automatically if one fails.
+  // =============================================================
+
+  const STATUS = document.getElementById('status');
+  const GRID = document.getElementById('grid');
+  const SCAN_BTN = document.getElementById('scanBtn');
+  const FILTER_BAR = document.getElementById('filters');
+
+  let allGames = [];
+  let activeFilter = 'all';
+
+  // ---------- CORS-safe fetch ----------
+  // Tries a direct fetch first (works on https hosts that allow CORS),
+  // then falls back through a chain of public CORS proxies.
+  // Each proxy is tried with a per-request timeout so a slow/dead proxy
+  // does not stall the whole scan.
+  const CORS_PROXIES = [
+    // allorigins /get returns JSON {contents:"<body>"} — most reliable today
+    { wrap: (u) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u), unwrap: 'allorigins' },
+    // corsproxy.io (sometimes 403s — kept as fallback)
+    { wrap: (u) => 'https://corsproxy.io/?' + encodeURIComponent(u), unwrap: 'raw' },
+    // codetabs
+    { wrap: (u) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u), unwrap: 'raw' },
+    // r.jina.ai — text reader, returns the body as plain text (works for JSON too)
+    { wrap: (u) => 'https://r.jina.ai/' + u, unwrap: 'raw' },
+    // allorigins /raw
+    { wrap: (u) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), unwrap: 'raw' },
+  ];
+
+  function fetchWithTimeout(url, opts = {}, ms = 9000) {
+    return new Promise((resolve, reject) => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), ms);
+      fetch(url, { ...opts, signal: ctrl.signal })
+        .then(r => { clearTimeout(t); resolve(r); })
+        .catch(e => { clearTimeout(t); reject(e); });
+    });
+  }
+
+  async function safeFetchJSON(targetUrl) {
+    // 1) Try direct first (works on https-hosted version where API allows CORS)
+    try {
+      const res = await fetchWithTimeout(targetUrl, { headers: { 'Accept': 'application/json' } }, 7000);
+      if (res.ok) return await res.json();
+    } catch (_) { /* fall through to proxies */ }
+
+    // 2) Cycle through proxies
+    let lastErr;
+    for (const p of CORS_PROXIES) {
+      try {
+        const proxied = p.wrap(targetUrl);
+        const res = await fetchWithTimeout(proxied, { headers: { 'Accept': 'application/json, text/plain, */*' } }, 9000);
+        if (!res.ok) { lastErr = new Error('Proxy ' + res.status); continue; }
+        const text = await res.text();
+        let payload = text;
+        if (p.unwrap === 'allorigins') {
+          try {
+            const wrapped = JSON.parse(text);
+            payload = wrapped.contents;
+          } catch (e) { lastErr = e; continue; }
+        }
+        try {
+          return JSON.parse(payload);
+        } catch (e) {
+          lastErr = e;
+          continue;
+        }
+      } catch (e) {
+        lastErr = e;
+        continue;
+      }
+    }
+    throw lastErr || new Error('All proxies failed');
+  }
+
+  // ---------- Per-source result cache ----------
+  // If a refresh fails for a source, reuse last good data so the count
+  // does not jump up and down between scans.
+  const lastGood = { epic: null, steam: null, gog: null };
+
+  // ---------- Status helpers ----------
+  function setStatus(text, kind = '') {
+    STATUS.innerHTML = kind
+      ? `<span class="${kind}">// ${text} //</span>`
+      : `// ${text} //`;
+  }
+
+  // ---------- Date helpers ----------
+  function formatCountdown(endDate) {
+    if (!endDate) return null;
+    const end = new Date(endDate);
+    const now = new Date();
+    const diff = end - now;
+    if (diff <= 0) return { text: 'Expired', urgent: true };
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    let text;
+    if (days >= 1) text = `${days}d ${hours}h`;
+    else if (hours >= 1) text = `${hours}h ${mins}m`;
+    else text = `${mins}m`;
+    return { text, urgent: days < 1 };
+  }
+
+  // ---------- Epic Games (Official endpoint) ----------
+  async function fetchEpic() {
+    const url = 'https://store-site-backend-static.ak.epicgames.com/freeGamesPromotions?locale=en-US&country=US&allowCountries=US';
+    try {
+      const data = await safeFetchJSON(url);
+      const elements = data?.data?.Catalog?.searchStore?.elements || [];
+      const games = [];
+      for (const e of elements) {
+        const promos = e.promotions?.promotionalOffers?.[0]?.promotionalOffers || [];
+        const upcoming = e.promotions?.upcomingPromotionalOffers?.[0]?.promotionalOffers || [];
+        const promo = promos[0];
+        if (!promo) continue;
+        const discountPct = promo.discountSetting?.discountPercentage;
+        if (discountPct !== 0) continue; // 0% = free
+        const banner =
+          (e.keyImages?.find(k => k.type === 'OfferImageWide') ||
+           e.keyImages?.find(k => k.type === 'DieselStoreFrontWide') ||
+           e.keyImages?.find(k => k.type === 'VaultClosed') ||
+           e.keyImages?.find(k => k.type === 'Thumbnail') ||
+           e.keyImages?.[0])?.url;
+
+        const slug = e.catalogNs?.mappings?.[0]?.pageSlug || e.productSlug || e.urlSlug || (e.offerMappings?.[0]?.pageSlug);
+        const url = slug ? `https://store.epicgames.com/en-US/p/${slug.replace(/\/home$/, '')}` : 'https://store.epicgames.com/en-US/free-games';
+
+        const origPrice = e.price?.totalPrice?.fmtPrice?.originalPrice || 'Free';
+
+        games.push({
+          id: 'epic-' + (e.id || e.title),
+          platform: 'epic',
+          platformLabel: 'Epic Games',
+          title: e.title,
+          description: e.description || 'Free this week on the Epic Games Store.',
+          banner,
+          url,
+          originalPrice: origPrice,
+          type: 'keep',
+          typeLabel: 'Keep Forever',
+          startDate: promo.startDate,
+          endDate: promo.endDate,
+        });
+      }
+      return games;
+    } catch (err) {
+      console.warn('Epic fetch failed:', err);
+      return { error: err.message };
+    }
+  }
+
+  // ---------- Steam + GOG via GamerPower (free games & giveaways) ----------
+  async function fetchGamerPower(platform) {
+    const url = `https://www.gamerpower.com/api/giveaways?platform=${platform}`;
+    try {
+      const data = await safeFetchJSON(url);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.value)
+          ? data.value
+          : Array.isArray(data.data?.value)
+            ? data.data.value
+            : [];
+      return list.map(g => {
+        const t = (g.type || '').toLowerCase();
+        const desc = (g.description || '').toLowerCase();
+        const title = (g.title || '').toLowerCase();
+        let type = 'keep', typeLabel = 'Keep Forever';
+        const isDlc = t.includes('dlc') || title.includes('dlc') || desc.includes('dlc');
+        if (isDlc) {
+          type = 'dlc'; typeLabel = 'Free DLC';
+        } else if (t.includes('beta') || desc.includes('beta')) {
+          type = 'trial'; typeLabel = 'Beta Access';
+        } else if (desc.includes('free weekend') || title.includes('free weekend') || desc.includes('free to play this weekend') || desc.includes('free play weekend')) {
+          type = 'weekend'; typeLabel = 'Free Weekend';
+        } else if (desc.includes('trial') || title.includes('trial')) {
+          type = 'trial'; typeLabel = 'Free Trial';
+        }
+        return {
+          id: 'gp-' + g.id + '-' + platform,
+          platform: platform,
+          platformLabel: platform === 'steam' ? 'Steam' : 'GOG',
+          title: g.title,
+          description: g.description || 'Limited-time free promotion.',
+          banner: g.image || g.thumbnail,
+          url: g.open_giveaway_url || g.gamerpower_url,
+          originalPrice: g.worth && g.worth !== 'N/A' ? g.worth : 'Free',
+          type,
+          typeLabel,
+          startDate: g.published_date,
+          endDate: g.end_date && g.end_date !== 'N/A' ? g.end_date : null,
+        };
+      });
+    } catch (err) {
+      console.warn('GamerPower ' + platform + ' fetch failed:', err);
+      return { error: err.message };
+    }
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const filtered = allGames.filter(g => {
+      if (activeFilter === 'all') return true;
+      if (['steam', 'epic', 'gog'].includes(activeFilter)) return g.platform === activeFilter;
+      if (activeFilter === 'keep') return g.type === 'keep';
+      if (activeFilter === 'weekend') return g.type === 'weekend';
+      if (activeFilter === 'dlc') return g.type === 'dlc';
+      if (activeFilter === 'nodlc') return g.type !== 'dlc';
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      GRID.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">∅</div>
+          <div class="empty-title">No Free Games Detected</div>
+          <div class="empty-text">${allGames.length === 0
+            ? 'No active free promotions found right now. Try again later, choomba.'
+            : 'No matches for this filter — try ALL.'}</div>
+        </div>`;
+      return;
+    }
+
+    GRID.innerHTML = filtered.map((g, i) => {
+      const cd = formatCountdown(g.endDate);
+      const banner = g.banner
+        ? `<img src="${g.banner}" alt="${escapeHtml(g.title)}" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\\'padding:60px;text-align:center;color:#9a93c7;font-family:Orbitron;letter-spacing:.2em\\'>NO IMAGE</div>'">`
+        : `<div style="padding:60px;text-align:center;color:#9a93c7;font-family:Orbitron;letter-spacing:.2em">NO IMAGE</div>`;
+
+      return `
+        <article class="card" style="animation-delay:${i * 0.05}s">
+          <div class="card-banner">
+            ${banner}
+            <div class="platform-badge ${g.platform}">${g.platformLabel}</div>
+            <div class="type-badge ${g.type}">${g.typeLabel}</div>
+          </div>
+          <div class="card-body">
+            <h2 class="card-title">${escapeHtml(g.title)}</h2>
+            <div class="card-meta">
+              ${g.originalPrice && g.originalPrice !== 'Free' ? `<span class="price">${escapeHtml(g.originalPrice)}</span>` : ''}
+              <span class="free">▸ FREE NOW</span>
+            </div>
+            <p class="card-desc">${escapeHtml(stripHtml(g.description))}</p>
+            <div class="card-footer">
+              ${cd
+                ? `<div class="countdown ${cd.urgent ? 'urgent' : ''}"><span class="label">Ends in</span>${cd.text}</div>`
+                : `<div class="countdown"><span class="label">Status</span>Limited Time</div>`}
+              <a class="claim-btn" href="${g.url}" target="_blank" rel="noopener">Claim ▸</a>
+            </div>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+  function stripHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/<[^>]*>/g, '').slice(0, 280);
+  }
+
+  // ---------- Scan ----------
+  async function scan() {
+    SCAN_BTN.disabled = true;
+    GRID.innerHTML = `
+      <div class="loading">
+        <div class="loader"></div>
+        <div class="loading-text">Scanning the Net...</div>
+      </div>`;
+    setStatus('Pinging Epic // Steam // GOG ...', 'warn');
+
+    const [epicRes, steamRes, gogRes] = await Promise.all([
+      fetchEpic(),
+      fetchGamerPower('steam'),
+      fetchGamerPower('gog'),
+    ]);
+
+    const errors = [];
+    let games = [];
+
+    // For each source: if fetch succeeded use new data AND cache it;
+    // if it failed, fall back to last good cached data so the counts
+    // don't bounce between scans.
+    function pick(res, key, label) {
+      if (Array.isArray(res)) { lastGood[key] = res; return res; }
+      if (Array.isArray(lastGood[key])) { errors.push(label + ' (cached)'); return lastGood[key]; }
+      errors.push(label); return [];
+    }
+
+    games = games.concat(pick(epicRes,  'epic', 'Epic'));
+    games = games.concat(pick(steamRes, 'steam', 'Steam'));
+    games = games.concat(pick(gogRes,   'gog',   'GOG'));
+
+    // Deduplicate by title+platform
+    const seen = new Set();
+    games = games.filter(g => {
+      const k = (g.platform + '|' + (g.title || '')).toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+
+    // Sort: keep-forever first, then weekend, dlc, trial; then end date soonest
+    games.sort((a, b) => {
+      const order = { keep: 0, weekend: 1, dlc: 2, trial: 3 };
+      const ao = order[a.type] ?? 4, bo = order[b.type] ?? 4;
+      if (ao !== bo) return ao - bo;
+      const ad = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+      const bd = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+      return ad - bd;
+    });
+
+    allGames = games;
+    render();
+
+    const ts = new Date().toLocaleTimeString();
+    if (games.length === 0 && errors.length) {
+      setStatus(`Scan failed for: ${errors.join(', ')}`, 'err');
+    } else if (errors.length) {
+      setStatus(`Found ${games.length} free game(s) @ ${ts} — ${errors.join(', ')} unreachable`, 'warn');
+    } else {
+      setStatus(`Scan complete — ${games.length} free game(s) detected @ ${ts}`, 'ok');
+    }
+    SCAN_BTN.disabled = false;
+  }
+
+  // ---------- Events ----------
+  SCAN_BTN.addEventListener('click', scan);
+
+  FILTER_BAR.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.filter;
+    if (allGames.length) render();
+  });
+
+  // Auto-scan on load
+  window.addEventListener('load', () => {
+    setTimeout(scan, 400);
+  });
+</script>
+</body>
+</html>
