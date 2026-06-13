@@ -1,5 +1,9 @@
 # ZILCH - Free Games Radar 🎮
 
+<img width="1887" height="921" alt="screenshot" src="https://github.com/user-attachments/assets/96249bf7-4002-4f4b-beab-f72f57ae6381" />
+
+---
+
 ZILCH is a cyberpunk-style web page that helps track free game promotions and giveaways from platforms like Steam, Epic Games, and GOG.
 
 The project is designed as a simple single-page website with a neon/cyberpunk look, platform filters, and game cards showing current free promotions.
@@ -46,6 +50,7 @@ zilch-free-games-radar/
 │
 ├── index.html
 └── README.md
+└── screenshots/
 
 ## 📌 Status
 
