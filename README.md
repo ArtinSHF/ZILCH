@@ -71,3 +71,7 @@ While making this project, I practiced:
 - Designing a cyberpunk-themed UI
 - Organizing a simple web project
 - Using VS Code and Live Server
+
+## License
+
+© 2025 ArtinSHF — Licensed under CC BY-NC 4.0. You may share and use this project with credit to ArtinSHF (github.com/ArtinSHF). Commercial use is not permitted. See LICENSE for details.
